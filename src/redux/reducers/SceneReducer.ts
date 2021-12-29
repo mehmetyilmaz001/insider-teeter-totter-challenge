@@ -26,7 +26,7 @@ const scene = createSlice({
       state: SceneReducerType,
       action: PayloadAction<ObjectProps>
     ) => void (state.leftObjects = [...state.leftObjects, action.payload]),
-    setEquity: (state: SceneReducerType, action: PayloadAction<number>) => void (state.equity = action.payload),
+    setEquity: (state: SceneReducerType, action: PayloadAction<number>) => void (state.equity = state.equity + action.payload),
   },
 });
 
@@ -38,6 +38,14 @@ export const getRightObject = (): AppThunk => async (dispatch) => {
   const object = createRandomObjectProps();
   dispatch(setEquity(object.weight));
   dispatch(addRightObject(object));
+}
+
+export const getObject = (direction: 'left' | 'right'): AppThunk => async (dispatch) => {
+  const object = createRandomObjectProps();
+  dispatch(setEquity(direction === 'left' ? 0 : object.weight)); 
+  // the equity is initially 0 for the left object. Because equity will be set after the left object reaches the arm
+
+  dispatch(direction === 'left' ? addLeftObject(object) : addRightObject(object));
 }
 
 

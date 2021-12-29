@@ -8,9 +8,9 @@ const Lever = styled.div`
   margin: auto;
   width: 0;
   height: 0;
-  border-left: 50px solid transparent;
-  border-right: 50px solid transparent;
-  border-bottom: 100px solid grey;
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  border-bottom: 190px solid grey;
 `;
 
 

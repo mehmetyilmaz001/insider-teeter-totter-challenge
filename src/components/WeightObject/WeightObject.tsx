@@ -16,7 +16,7 @@ const StyledShape = styled.div<WeightObjectProps>`
   font-weight: bold;
   color: white;
 
-  width: ${(props) => props.weight* OBJECT_WEIGHT_MULTIPLIER}px;
+  width: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px;
   height: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px;
 
   border-radius: ${(props) => {

@@ -1,0 +1,79 @@
+
+  const { start, stop, isActive } = useInterval(
+    () => {
+      setPos((pos) => ({ ...pos, y: pos.y + moveStep }));
+    },
+    200,
+    {
+      autoStart: false,
+      immediate: false,
+      selfCorrecting: false,
+      onFinish: () => {
+        console.log("Callback when timer is stopped");
+      },
+    }
+  );
+
+
+  useKeypress("ArrowLeft", () => {
+    move("left");
+  });
+  useKeypress("ArrowRight", () => {
+    move("right");
+  });
+
+  /* useEffect(() => {
+    console.log("arm angel", armAngel, isKeysLocked);
+  }, [armAngel, isKeysLocked]); */
+
+  const testLeftEl = (
+    <WeightObject
+      color="red"
+      shape={ObjectShape.CIRCLE}
+      value={elementValue}
+      position={pos}
+    />
+  );
+
+
+  useEffect(() => {
+    onReachToArm(pos);
+  }, [pos, onReachToArm]);
+
+
+  const reStart = () => {
+    setPos({ x: 0, y: 0 });
+    setIsKeysLocked(false);
+    start();
+  };
+
+  const move = (direction: "left" | "right") => {
+    if (!isKeysLocked) {
+      if (direction === "left") {
+        setPos((pos) => ({ ...pos, x: pos.x - moveStep }));
+      } else {
+        setPos((pos) => ({ ...pos, x: pos.x + moveStep }));
+      }
+    }
+  };
+
+  const onReachToArm = useCallback(
+    (pos: Position) => {
+      const { x, y } = pos;
+
+      if (armRef.current) {
+        const { y: armY } = armRef.current.getBoundingClientRect();
+
+        if (y + elementValue >= armY) {
+          setIsKeysLocked(true);
+          stop();
+
+          const weight = calculateWeight(x, 0);
+          console.log("weight => ", weight);
+
+          setEquity((equity) => equity - weight);
+        }
+      }
+    },
+    [calculateWeight, stop]
+  );

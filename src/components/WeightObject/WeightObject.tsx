@@ -1,14 +1,9 @@
 import { FunctionComponent } from "react";
-import { ObjectShape } from "../../enums/ObjectShape";
 import styled, { css } from "styled-components";
-import Position from "../../types/Position";
+import { OBJECT_WEIGHT_MULTIPLIER } from "../../constants";
+import { ObjectProps } from "../../helpers/Common";
 
-interface WeightObjectProps {
-  shape: ObjectShape;
-  color: string;
-  value: number;
-  position: Position;
-}
+interface WeightObjectProps extends ObjectProps {}
 
 const StyledShape = styled.div<WeightObjectProps>`
   position: absolute;
@@ -16,19 +11,19 @@ const StyledShape = styled.div<WeightObjectProps>`
   left: ${(props) => props.position.x}px;
   display: flex;
   justify-content: center;
-  align-items: baseline;
+  align-items: center;
   transition: all 0.2s;
   font-weight: bold;
   color: white;
 
-  width: ${(props) => props.value + 20}px;
-  height: ${(props) => props.value + 20}px;
+  width: ${(props) => props.weight* OBJECT_WEIGHT_MULTIPLIER}px;
+  height: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px;
 
   border-radius: ${(props) => {
     switch (props.shape) {
-      case ObjectShape.CIRCLE:
+      case "CIRCLE":
         return "50%";
-      case ObjectShape.SQUARE:
+      case "SQUARE":
         return "0";
       default:
         return "0";
@@ -36,24 +31,35 @@ const StyledShape = styled.div<WeightObjectProps>`
   }};
 
   ${(props) =>
-    props.shape !== ObjectShape.TRIANGLE &&
+    props.shape !== "TRIANGLE" &&
     css<{ color: string }>`
       background-color: ${(props) => props.color};
     `}
 
   ${(props) =>
-    props.shape === ObjectShape.TRIANGLE &&
-    css<{ color: string, value: number }>`
+    props.shape === "TRIANGLE" &&
+    css<{ color: string; weight: number }>`
       width: 0;
       height: 0;
-      border-left: ${(props) => (props.value + 20 / 2)}px solid transparent;
-      border-right: ${(props) => (props.value + 20 / 2)}px solid transparent;
-      border-bottom: ${(props) => props.value + 20}px solid ${(props) => props.color};
+      border-left: ${(props) => (props.weight * OBJECT_WEIGHT_MULTIPLIER) / 2}px
+        solid transparent;
+      border-right: ${(props) =>
+          (props.weight * OBJECT_WEIGHT_MULTIPLIER) / 2}px
+        solid transparent;
+      border-bottom: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px
+        solid ${(props) => props.color};
     `}
 `;
 
 const WeightObject: FunctionComponent<WeightObjectProps> = (props) => {
-  return <StyledShape {...props}>{props.value}</StyledShape>;
+  const defaultProps = {
+    ...props,
+    position: {
+      ...props.position,
+      y: -props.weight * OBJECT_WEIGHT_MULTIPLIER,
+    },
+  };
+  return <StyledShape {...defaultProps}>{props.weight}</StyledShape>;
 };
 
 export default WeightObject;

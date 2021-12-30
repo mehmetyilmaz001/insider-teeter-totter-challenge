@@ -1,7 +1,13 @@
-import { getDisplayWeight } from './../../components/WeightObject/WeightObject';
+import { calcBending } from "./../../helpers/Common";
+import { getDisplayWeight } from "./../../components/WeightObject/WeightObject";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ARM_MAX_BENDING_PERCENTAGE, ARM_WIDTH, OBJECT_MOVE_STEP } from "../../constants";
-import { createRandomObjectProps } from "../../helpers/Common";
+import {
+  ARM_MAX_BENDING_PERCENTAGE,
+  ARM_WIDTH,
+  HALF_ARM_WIDTH,
+  OBJECT_MOVE_STEP,
+} from "../../constants";
+import { calcPower, createRandomObjectProps } from "../../helpers/Common";
 import ObjectProps from "../../types/ObjectProps";
 import { AppThunk } from "../store";
 
@@ -14,6 +20,7 @@ type SceneReducerType = {
   started: boolean;
   paused: boolean;
   hasReached: boolean;
+  hasFailed: boolean;
 };
 
 const initialState: SceneReducerType = {
@@ -25,6 +32,7 @@ const initialState: SceneReducerType = {
   started: false,
   paused: false,
   hasReached: false,
+  hasFailed: false,
 };
 
 const scene = createSlice({
@@ -43,14 +51,18 @@ const scene = createSlice({
       void (state.equity = state.equity + action.payload),
     setBending: (state: SceneReducerType, action: PayloadAction<number>) =>
       void (state.bending = action.payload),
-    setFlyingObject: (state: SceneReducerType, action: PayloadAction<ObjectProps | null>) =>
-      void (state.flyingObject = action.payload),
+    setFlyingObject: (
+      state: SceneReducerType,
+      action: PayloadAction<ObjectProps | null>
+    ) => void (state.flyingObject = action.payload),
     setStarted: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.started = action.payload),
     setPaused: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.paused = action.payload),
     setHasReached: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.hasReached = action.payload),
+    setHasFailed: (state: SceneReducerType, action: PayloadAction<boolean>) =>
+      void (state.hasFailed = action.payload),
   },
 });
 
@@ -62,64 +74,127 @@ export const {
   setBending,
   setStarted,
   setPaused,
-  setHasReached
+  setHasReached,
+  setHasFailed,
 } = scene.actions;
-
-// create a method to add an object to the scene with async dispatch
-// export const getRightObject = (): AppThunk => async (dispatch) => {
-//   const object = createRandomObjectProps();
-//   dispatch(setEquity(object.weight));
-//   dispatch(addRightObject(object));
-// }
-
 
 export const createFlyingObject = (): AppThunk => async (dispatch) => {
   const object = createRandomObjectProps("left");
   dispatch(setFlyingObject(object));
-}
+  dispatch(setHasReached(false));
+};
 
-export const moveObject = (direction: 'left' | 'right' | 'bottom',  ): AppThunk => (dispatch, getState) => {
-  const { scene: { flyingObject }} = getState();
-  
-  if (flyingObject) {
+export const moveObject =
+  (direction: "left" | "right" | "bottom"): AppThunk =>
+  (dispatch, getState) => {
+    const {
+      scene: { flyingObject },
+    } = getState();
 
-    let x = flyingObject.position.x;
-    let y = flyingObject.position.y;
+    if (flyingObject) {
+      let x = flyingObject.position.x;
+      let y = flyingObject.position.y;
 
-    if(direction === 'left') {
-      x -= OBJECT_MOVE_STEP;
-    }else if(direction === 'right') {
-      x += OBJECT_MOVE_STEP;
-    }else if(direction === 'bottom') {
-      y += OBJECT_MOVE_STEP;
-    }
-
-  
-
-    const newFliyngObject = {
-      ...flyingObject, 
-      position: {
-        ...flyingObject.position, 
-        x,
-        y
-      }};
-
-      const {y: armY} = document.getElementsByClassName('arm')[0].getBoundingClientRect();
-
-      if( (y + getDisplayWeight(flyingObject.weight)) >= armY ){
-        dispatch(setHasReached(true));
-        dispatch(setEquity(-flyingObject.weight))     
-        dispatch(calculateBending());
-        dispatch(addLeftObject({...flyingObject, position: {...flyingObject.position, y: -getDisplayWeight(flyingObject.weight)}}));
-        dispatch(setFlyingObject(null));
-        return;
+      if (direction === "left") {
+        x -= OBJECT_MOVE_STEP;
+      } else if (direction === "right") {
+        x += OBJECT_MOVE_STEP;
+      } else if (direction === "bottom") {
+        y += OBJECT_MOVE_STEP;
       }
 
-      console.log("objectY", y);
-      console.log("armY", armY);    
+      const newFliyngObject = {
+        ...flyingObject,
+        position: {
+          ...flyingObject.position,
+          x,
+          y,
+        },
+      };
+
+      // const { y: armY } = document
+      //   .getElementsByClassName("arm")[0]
+      //   .getBoundingClientRect();
+
+      // if (y + getDisplayWeight(flyingObject.weight) >= armY) {
+      //   dispatch(setHasReached(true));
+      //   dispatch(setEquity(-flyingObject.weight));
+      //   dispatch(getBending());
+      //   dispatch(
+      //     addLeftObject({
+      //       ...flyingObject,
+      //       position: {
+      //         ...flyingObject.position,
+      //         y: -getDisplayWeight(flyingObject.weight),
+      //       },
+      //     })
+      //   );
+      //   dispatch(setFlyingObject(null));
+
+      //   if (bending >= ARM_MAX_BENDING_PERCENTAGE) {
+      //     dispatch(setHasFailed(true));
+
+      //     return;
+      //   } else {
+      //     dispatch(getObject("right"));
+      //     dispatch(setHasReached(false));
+      //   }
+      // }
+
+      // console.log("objectY", y);
+      // console.log("armY", armY);
 
       dispatch(setFlyingObject(newFliyngObject));
-  
+
+
+      dispatch(onFlyingObjectReachesArm());
+    }
+  };
+
+const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
+  const {
+    scene: { flyingObject, bending, hasFailed },
+  } = getState();
+
+  if (flyingObject) {
+    const { y: armY } = document
+      .getElementsByClassName("arm")[0]
+      .getBoundingClientRect();
+
+    if (flyingObject.position.y + getDisplayWeight(flyingObject.weight) >= armY) {
+      dispatch(setHasReached(true));
+      dispatch(setEquity(-flyingObject.weight));
+      dispatch(getBending());
+      dispatch(
+        addLeftObject({
+          ...flyingObject,
+          position: {
+            ...flyingObject.position,
+            y: -getDisplayWeight(flyingObject.weight),
+          },
+        })
+      );
+      dispatch(setFlyingObject(null));
+
+      if (hasFailed === false) {
+        
+        dispatch(getObject("right"));
+
+
+        console.log("bending", bending);
+
+        if (Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE) {
+          dispatch(setHasFailed(true));
+          return;
+
+        } else {
+          dispatch(setHasFailed(false));
+          dispatch(createFlyingObject());
+          dispatch(setHasReached(false));
+
+        }
+      }
+    }
   }
 };
 
@@ -135,28 +210,16 @@ export const getObject =
     );
 
     if (direction === "right") {
-      dispatch(calculateBending());
+      dispatch(getBending());
     }
   };
 
-export const calculateBending = (): AppThunk => async (dispatch, getState) => {
+export const getBending = (): AppThunk => async (dispatch, getState) => {
   const {
     scene: { equity, rightObjects, leftObjects },
   } = getState();
 
-  const rightPower = rightObjects.reduce(
-    (power, object) => power + object.position.x / (ARM_WIDTH + 10),
-    0
-  );
-  
-  const leftPower = leftObjects.reduce(
-    (power, object) => power + object.position.x / (ARM_WIDTH + 10),
-    0
-  );
-
-  console.log('equit => ', equity)
-
-  const bending = Math.min(equity *  Math.abs(leftPower - rightPower), ARM_MAX_BENDING_PERCENTAGE);
+  const bending = calcBending(equity, rightObjects, leftObjects);
   dispatch(setBending(bending));
 };
 

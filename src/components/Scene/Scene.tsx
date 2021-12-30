@@ -17,13 +17,13 @@ interface SceneProps {}
 const Scene: FunctionComponent<SceneProps> = () => {
   
   const dispatch = useDispatch();
-  const { leftObjects, rightObjects, bending, flyingObject, hasReached } = useSelector((state: Store) => state.scene);
+  const { leftObjects, rightObjects, bending, flyingObject, hasReached, hasFailed } = useSelector((state: Store) => state.scene);
   const contaierRef = React.useRef<HTMLDivElement>(null);
   const armRef = React.useRef<HTMLDivElement>(null);
 
   const {start, stop, isActive} = useInterval(() => {
     dispatch(moveObject("bottom"));
-  },  100, {autoStart: false, onFinish: () => {
+  },  50, {autoStart: false, selfCorrecting: true, onFinish: () => {
     console.log("finish");
   }, });
 
@@ -41,36 +41,40 @@ const Scene: FunctionComponent<SceneProps> = () => {
 
 
   useEffect(() => {
-    if (hasReached) {
+    if (hasReached || hasFailed) {
       stop();
+    }else{
+      start();
     }
-  } , [hasReached, stop]);
+  } , [hasReached, stop, start, hasFailed]);
   
+
+  // First object for intial setup to the right
   useEffect(() => {
     dispatch(getObject('right'))
   }, [dispatch])
 
-
-  console.log("is timer active: ", isActive());
-
+ 
   return (
+    <>
     <Container ref={contaierRef}>
       <ButtonsContainer>
           <button onClick={_onPlay}>{isActive() ? 'Pause' : 'Play'}</button>
       </ButtonsContainer>
 
-
         {flyingObject && <WeightObject {...flyingObject} className='flying-object' /> }
       
         <ArmAndLever>
-          {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
           <Arm className="arm" angel={bending!} ref={armRef} > 
-            
+            {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}  
             {rightObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
           </Arm>
         <Lever />
       </ArmAndLever>
+
+
     </Container>
+    </>
   );
 };
 

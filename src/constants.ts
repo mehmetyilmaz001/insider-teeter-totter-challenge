@@ -1,4 +1,5 @@
 export const ARM_WIDTH = 10 * 80;
+export const HALF_ARM_WIDTH = ARM_WIDTH / 2;
 export const ARM_WIDTH_PLUS_WITH_OBJECT_SPACE = ARM_WIDTH + 10;
 export const ARM_MAX_BENDING_PERCENTAGE = 30;
 export const ARM_MAX_POWER_DIFF = 20;

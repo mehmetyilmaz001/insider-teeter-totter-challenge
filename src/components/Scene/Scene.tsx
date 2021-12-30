@@ -1,12 +1,13 @@
-import React, { FunctionComponent, useEffect } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
+import { useInterval } from "react-interval-hook";
 import { useDispatch, useSelector } from "react-redux";
-import { ARM_MAX_BENDING_PERCENTAGE, ARM_WIDTH } from "../../constants";
-import { ObjectProps } from "../../helpers/Common";
-import { getObject, getRightObject } from "../../redux/reducers/SceneReducer";
+import { createFlyingObject, getObject } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
+import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
 import Arm from "./components/Arm";
 import ArmAndLever from "./components/ArmAndLever";
+import ButtonsContainer from "./components/ButtonsContainer";
 import Container from "./components/Container";
 import Lever from "./components/Lever";
 
@@ -15,30 +16,46 @@ interface SceneProps {}
 const Scene: FunctionComponent<SceneProps> = () => {
   
   const dispatch = useDispatch();
-  const { rightObjects, equity } = useSelector((state: Store) => state.scene);
+  const { leftObjects, rightObjects, bending, flyingObject } = useSelector((state: Store) => state.scene);
   const contaierRef = React.useRef<HTMLDivElement>(null);
   const armRef = React.useRef<HTMLDivElement>(null);
+
+  const {start, stop, isActive} = useInterval(() => {
+    console.log("a")
+  },  1000, {autoStart: false, onFinish: () => {
+    console.log("finish");
+  }, });
 
 
   useEffect(() => {
     dispatch(getObject('right'))
   }, [dispatch])
 
-  
-  let bending = 0
-  if(rightObjects.length > 0 ) {
-    const rightPower = rightObjects.reduce((power, object) => power + (object.position.x / (ARM_WIDTH + 10)), 0)
-    bending = Math.min((equity * rightPower), ARM_MAX_BENDING_PERCENTAGE);
-    console.log("bending",  bending, equity);
+
+  useEffect(() => {
+    // start();
+  } , [leftObjects])
+
+
+  const _onPlay = () => {
+    dispatch(createFlyingObject());
   }
- 
+
+  console.log("is timer active: ", isActive());
 
   return (
     <Container ref={contaierRef}>
-      <button onClick={() => dispatch(getObject('left'))}>Set Left</button>
+      <ButtonsContainer>
+          <button onClick={_onPlay}>{isActive() ? 'Pause' : 'Play'}</button>
+      </ButtonsContainer>
+
+
+        {flyingObject && <WeightObject {...flyingObject} className='flying-object' /> }
+      
         <ArmAndLever>
-          
+        {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
           <Arm className="arm" angel={bending!} ref={armRef} > 
+            
             {rightObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
           </Arm>
         <Lever />

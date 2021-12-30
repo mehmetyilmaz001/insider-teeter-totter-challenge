@@ -1,9 +1,15 @@
 import { FunctionComponent } from "react";
 import styled, { css } from "styled-components";
 import { OBJECT_WEIGHT_MULTIPLIER } from "../../constants";
-import { ObjectProps } from "../../helpers/Common";
+import ObjectProps from "../../types/ObjectProps";
 
-interface WeightObjectProps extends ObjectProps {}
+export const getDisplayWeight = (weight: number) => {
+  return weight * OBJECT_WEIGHT_MULTIPLIER;
+}
+
+interface WeightObjectProps extends ObjectProps {
+  className?: string
+}
 
 const StyledShape = styled.div<WeightObjectProps>`
   position: absolute;
@@ -16,8 +22,8 @@ const StyledShape = styled.div<WeightObjectProps>`
   font-weight: bold;
   color: white;
 
-  width: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px;
-  height: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px;
+  width: ${(props) => getDisplayWeight(props.weight)}px;
+  height: ${(props) => getDisplayWeight(props.weight)}px;
 
   border-radius: ${(props) => {
     switch (props.shape) {
@@ -41,22 +47,23 @@ const StyledShape = styled.div<WeightObjectProps>`
     css<{ color: string; weight: number }>`
       width: 0;
       height: 0;
-      border-left: ${(props) => (props.weight * OBJECT_WEIGHT_MULTIPLIER) / 2}px
+      border-left: ${(props) => getDisplayWeight(props.weight) / 2}px
         solid transparent;
       border-right: ${(props) =>
-          (props.weight * OBJECT_WEIGHT_MULTIPLIER) / 2}px
+          getDisplayWeight(props.weight) / 2}px
         solid transparent;
-      border-bottom: ${(props) => props.weight * OBJECT_WEIGHT_MULTIPLIER}px
+      border-bottom: ${(props) => getDisplayWeight(props.weight)}px
         solid ${(props) => props.color};
     `}
 `;
 
 const WeightObject: FunctionComponent<WeightObjectProps> = (props) => {
+  console.log("props: ", props);
   const defaultProps = {
     ...props,
     position: {
       ...props.position,
-      y: -props.weight * OBJECT_WEIGHT_MULTIPLIER,
+      y: props.side === 'right' ?  -getDisplayWeight(props.weight) : 0,
     },
   };
   return <StyledShape {...defaultProps}>{props.weight}</StyledShape>;

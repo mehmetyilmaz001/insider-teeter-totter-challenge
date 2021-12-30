@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { OBJECT_MOVE_DELAY } from "../../constants";
 import { formatMMSS, secondsToTime } from "../../helpers/Common";
@@ -19,6 +19,9 @@ import Lever from "./components/Lever";
 interface SceneProps {}
 
 const Scene: FunctionComponent<SceneProps> = () => {
+
+  const [ everyTenSeconds, setEveryTenSeconds ] = useState<number>(0);
+  const [ speed, setSpeed ] = useState<number>(OBJECT_MOVE_DELAY);
   
   const dispatch = useDispatch();
   const { 
@@ -63,6 +66,18 @@ const Scene: FunctionComponent<SceneProps> = () => {
 
 
   useDidUpdate(() => {
+    const factor = 5;
+    const _everyTenSeconds = Math.floor(elapsedTime / factor) * factor;
+    
+    if (_everyTenSeconds !== everyTenSeconds) {
+      console.log("everyTenSeconds=> ", everyTenSeconds)
+      setSpeed(OBJECT_MOVE_DELAY - (OBJECT_MOVE_DELAY * 0.25));
+      setEveryTenSeconds(_everyTenSeconds);
+    }
+
+  } , [elapsedTime]);
+
+  useDidUpdate(() => {
     if (hasReached || hasFailed) {
       dispatch(setIsPlaying(false));
     }else{
@@ -80,6 +95,7 @@ const Scene: FunctionComponent<SceneProps> = () => {
     <>
     Is Playing :{isPlaying ? "evet" : "hayır"} <br />
     Elapsed Time : {formatMMSS(elapsedTime)}  <br />
+    Speed : {speed}  <br />
     {hasFailed && <FailState onReply={() => dispatch(replay())} reason={failReason}/>}
     <Container>
       <ButtonsContainer>

@@ -24,7 +24,7 @@ const StyledShape = styled.div<WeightObjectProps>`
 
   width: ${(props) => getDisplayWeight(props.weight)}px;
   height: ${(props) => getDisplayWeight(props.weight)}px;
-
+  opacity: 0.9;
   border-radius: ${(props) => {
     switch (props.shape) {
       case "CIRCLE":
@@ -40,6 +40,7 @@ const StyledShape = styled.div<WeightObjectProps>`
     props.shape !== "TRIANGLE" &&
     css<{ color: string }>`
       background-color: ${(props) => props.color};
+      
     `}
 
   ${(props) =>

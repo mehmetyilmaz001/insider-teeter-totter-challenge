@@ -3,11 +3,9 @@ import { getDisplayWeight } from "./../../components/WeightObject/WeightObject";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ARM_MAX_BENDING_PERCENTAGE,
-  ARM_WIDTH,
-  HALF_ARM_WIDTH,
   OBJECT_MOVE_STEP,
 } from "../../constants";
-import { calcPower, createRandomObjectProps } from "../../helpers/Common";
+import { createRandomObjectProps } from "../../helpers/Common";
 import ObjectProps from "../../types/ObjectProps";
 import { AppThunk } from "../store";
 
@@ -63,6 +61,17 @@ const scene = createSlice({
       void (state.hasReached = action.payload),
     setHasFailed: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.hasFailed = action.payload),
+    reset: (state: SceneReducerType) => {
+      state.rightObjects = [];
+      state.leftObjects = [];
+      state.equity = 0;
+      state.bending = 0;
+      state.flyingObject = null;
+      state.started = false;
+      state.paused = false;
+      state.hasReached = false;
+      state.hasFailed = false;
+    }
   },
 });
 
@@ -76,7 +85,14 @@ export const {
   setPaused,
   setHasReached,
   setHasFailed,
+  reset
 } = scene.actions;
+
+export const replay = (): AppThunk => (dispatch) => {
+  dispatch(reset());
+  dispatch(createFlyingObject());
+  dispatch(getObject("right"));
+}
 
 export const createFlyingObject = (): AppThunk => async (dispatch) => {
   const object = createRandomObjectProps("left");
@@ -112,41 +128,7 @@ export const moveObject =
         },
       };
 
-      // const { y: armY } = document
-      //   .getElementsByClassName("arm")[0]
-      //   .getBoundingClientRect();
-
-      // if (y + getDisplayWeight(flyingObject.weight) >= armY) {
-      //   dispatch(setHasReached(true));
-      //   dispatch(setEquity(-flyingObject.weight));
-      //   dispatch(getBending());
-      //   dispatch(
-      //     addLeftObject({
-      //       ...flyingObject,
-      //       position: {
-      //         ...flyingObject.position,
-      //         y: -getDisplayWeight(flyingObject.weight),
-      //       },
-      //     })
-      //   );
-      //   dispatch(setFlyingObject(null));
-
-      //   if (bending >= ARM_MAX_BENDING_PERCENTAGE) {
-      //     dispatch(setHasFailed(true));
-
-      //     return;
-      //   } else {
-      //     dispatch(getObject("right"));
-      //     dispatch(setHasReached(false));
-      //   }
-      // }
-
-      // console.log("objectY", y);
-      // console.log("armY", armY);
-
       dispatch(setFlyingObject(newFliyngObject));
-
-
       dispatch(onFlyingObjectReachesArm());
     }
   };
@@ -179,8 +161,6 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
       if (hasFailed === false) {
         
         dispatch(getObject("right"));
-
-
         console.log("bending", bending);
 
         if (Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE) {

@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from "react";
 import { useInterval } from "react-interval-hook";
 import { useDispatch, useSelector } from "react-redux";
 import useKeypress from "../../hooks/UseKeyPress";
-import { createFlyingObject, getObject, moveObject } from "../../redux/reducers/SceneReducer";
+import { createFlyingObject, getObject, moveObject, replay } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
 import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
@@ -10,6 +10,7 @@ import Arm from "./components/Arm";
 import ArmAndLever from "./components/ArmAndLever";
 import ButtonsContainer from "./components/ButtonsContainer";
 import Container from "./components/Container";
+import FailState from "./components/FailState";
 import Lever from "./components/Lever";
 
 interface SceneProps {}
@@ -57,9 +58,10 @@ const Scene: FunctionComponent<SceneProps> = () => {
  
   return (
     <>
+    {hasFailed && <FailState onReply={() => dispatch(replay())}/>}
     <Container ref={contaierRef}>
       <ButtonsContainer>
-          <button onClick={_onPlay}>{isActive() ? 'Pause' : 'Play'}</button>
+          <button onClick={_onPlay}>{'Play'}</button>
       </ButtonsContainer>
 
         {flyingObject && <WeightObject {...flyingObject} className='flying-object' /> }

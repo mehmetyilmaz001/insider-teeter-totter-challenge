@@ -11,20 +11,27 @@ interface WeightObjectProps extends ObjectProps {
   className?: string
 }
 
-const StyledShape = styled.div<WeightObjectProps>`
+const StyledShape = styled.div.attrs<ObjectProps>(({position}) => ({
+  style: {
+    top: position.y + 'px',
+    left: position.x + 'px'
+  }
+}))<WeightObjectProps>`
   position: absolute;
-  top: ${(props) => props.position.y}px;
-  left: ${(props) => props.position.x}px;
+  
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all 0.2s;
   font-weight: bold;
+  font-size: ${(props) => getDisplayWeight(props.weight) * 0.8}px;
   color: white;
 
   width: ${(props) => getDisplayWeight(props.weight)}px;
   height: ${(props) => getDisplayWeight(props.weight)}px;
-  opacity: 0.9;
+  opacity: 0.8;
+  animation: center-animate .2s ease alternate;
+
   border-radius: ${(props) => {
     switch (props.shape) {
       case "CIRCLE":
@@ -35,6 +42,22 @@ const StyledShape = styled.div<WeightObjectProps>`
         return "0";
     }
   }};
+
+
+  span {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    text-shadow: 1px 2px black;
+    
+    ${(props) => props.shape === "TRIANGLE" &&
+    css<{ weight: number }>`
+      left: -${props => props.weight * 2}px;
+      
+    `}
+
+  }
 
   ${(props) =>
     props.shape !== "TRIANGLE" &&
@@ -56,6 +79,15 @@ const StyledShape = styled.div<WeightObjectProps>`
       border-bottom: ${(props) => getDisplayWeight(props.weight)}px
         solid ${(props) => props.color};
     `}
+
+    @keyframes center-animate {
+    0% {
+      transform: scale(2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 `;
 
 const WeightObject: FunctionComponent<WeightObjectProps> = (props) => {
@@ -67,7 +99,10 @@ const WeightObject: FunctionComponent<WeightObjectProps> = (props) => {
       y: props.side === 'right' ?  -getDisplayWeight(props.weight) : props.position.y,
     },
   };
-  return <StyledShape {...defaultProps}>{props.weight}</StyledShape>;
+  return (
+  <StyledShape {...defaultProps} className="weight-object">
+      <span>{props.weight}</span>
+  </StyledShape>);
 };
 
 export default WeightObject;

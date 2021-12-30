@@ -33,8 +33,8 @@ export const calcBending = (equity: number, rightObjects: ObjectProps[], leftObj
   const multiplyWithPower = equity *  Math.abs(leftPower + rightPower);
   const bending = Math.ceil( equity < 0 ? Math.max(multiplyWithPower, -ARM_MAX_BENDING_PERCENTAGE) : Math.min(multiplyWithPower, ARM_MAX_BENDING_PERCENTAGE) );
   
-  console.log('equit => ', equity)
-  console.log('bending => ', bending)
+  // console.log('equit => ', equity)
+  // console.log('bending => ', bending)
   // dispatch(setBending(bending));
 
   return bending;

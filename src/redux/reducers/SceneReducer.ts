@@ -160,8 +160,11 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
 
       if (hasFailed === false) {
         
-        dispatch(getObject("right"));
-        console.log("bending", bending);
+        setTimeout(() => {
+        // Create new right object
+          dispatch(getObject("right"));
+        }, 500);
+
 
         if (Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE) {
           dispatch(setHasFailed(true));
@@ -169,9 +172,11 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
 
         } else {
           dispatch(setHasFailed(false));
-          dispatch(createFlyingObject());
           dispatch(setHasReached(false));
 
+          setTimeout(() => {
+          dispatch(createFlyingObject());
+          }, 700);
         }
       }
     }

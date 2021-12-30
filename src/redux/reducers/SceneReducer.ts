@@ -1,10 +1,7 @@
 import { calcBending } from "./../../helpers/Common";
 import { getDisplayWeight } from "./../../components/WeightObject/WeightObject";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  ARM_MAX_BENDING_PERCENTAGE,
-  OBJECT_MOVE_STEP,
-} from "../../constants";
+import { ARM_MAX_BENDING_PERCENTAGE, OBJECT_MOVE_STEP } from "../../constants";
 import { createRandomObjectProps } from "../../helpers/Common";
 import ObjectProps from "../../types/ObjectProps";
 import { AppThunk } from "../store";
@@ -15,10 +12,10 @@ type SceneReducerType = {
   flyingObject: ObjectProps | null;
   equity: number;
   bending: number;
-  started: boolean;
-  paused: boolean;
+  isPlaying: boolean;
   hasReached: boolean;
   hasFailed: boolean;
+  failReason: string;
 };
 
 const initialState: SceneReducerType = {
@@ -27,10 +24,10 @@ const initialState: SceneReducerType = {
   flyingObject: null,
   equity: 0,
   bending: 0,
-  started: false,
-  paused: false,
+  isPlaying: false,
   hasReached: false,
   hasFailed: false,
+  failReason: "",
 };
 
 const scene = createSlice({
@@ -53,25 +50,26 @@ const scene = createSlice({
       state: SceneReducerType,
       action: PayloadAction<ObjectProps | null>
     ) => void (state.flyingObject = action.payload),
-    setStarted: (state: SceneReducerType, action: PayloadAction<boolean>) =>
-      void (state.started = action.payload),
-    setPaused: (state: SceneReducerType, action: PayloadAction<boolean>) =>
-      void (state.paused = action.payload),
+
+    setIsPlaying: (state: SceneReducerType, action: PayloadAction<boolean>) =>
+      void (state.isPlaying = action.payload),
     setHasReached: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.hasReached = action.payload),
     setHasFailed: (state: SceneReducerType, action: PayloadAction<boolean>) =>
       void (state.hasFailed = action.payload),
+    setFailReason: (state: SceneReducerType, action: PayloadAction<string>) =>
+      void (state.failReason = action.payload),
     reset: (state: SceneReducerType) => {
       state.rightObjects = [];
       state.leftObjects = [];
       state.equity = 0;
       state.bending = 0;
       state.flyingObject = null;
-      state.started = false;
-      state.paused = false;
+      state.isPlaying = false;
       state.hasReached = false;
       state.hasFailed = false;
-    }
+      state.failReason = "";
+    },
   },
 });
 
@@ -81,18 +79,18 @@ export const {
   setEquity,
   setFlyingObject,
   setBending,
-  setStarted,
-  setPaused,
+  setIsPlaying,
   setHasReached,
   setHasFailed,
-  reset
+  setFailReason,
+  reset,
 } = scene.actions;
 
 export const replay = (): AppThunk => (dispatch) => {
   dispatch(reset());
   dispatch(createFlyingObject());
   dispatch(getObject("right"));
-}
+};
 
 export const createFlyingObject = (): AppThunk => async (dispatch) => {
   const object = createRandomObjectProps("left");
@@ -135,7 +133,7 @@ export const moveObject =
 
 const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
   const {
-    scene: { flyingObject, bending, hasFailed },
+    scene: { flyingObject, bending, hasFailed, leftObjects, rightObjects },
   } = getState();
 
   if (flyingObject) {
@@ -143,7 +141,10 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
       .getElementsByClassName("arm")[0]
       .getBoundingClientRect();
 
-    if (flyingObject.position.y + getDisplayWeight(flyingObject.weight) >= armY) {
+    if (
+      flyingObject.position.y + getDisplayWeight(flyingObject.weight) >=
+      armY
+    ) {
       dispatch(setHasReached(true));
       dispatch(setEquity(-flyingObject.weight));
       dispatch(getBending());
@@ -159,23 +160,24 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
       dispatch(setFlyingObject(null));
 
       if (hasFailed === false) {
-        
         setTimeout(() => {
-        // Create new right object
+          // Create new right object
           dispatch(getObject("right"));
         }, 500);
 
-
-        if (Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE) {
+       
+        const bendingClause = Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE;
+        
+        if (bendingClause) {
           dispatch(setHasFailed(true));
+          dispatch(setFailReason("Failed! Weight is too high for one side!"));
           return;
-
         } else {
           dispatch(setHasFailed(false));
           dispatch(setHasReached(false));
 
           setTimeout(() => {
-          dispatch(createFlyingObject());
+            dispatch(createFlyingObject());
           }, 700);
         }
       }

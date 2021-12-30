@@ -1,8 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
-import { useInterval } from "react-interval-hook";
 import { useDispatch, useSelector } from "react-redux";
+import { OBJECT_MOVE_DELAY } from "../../constants";
+import useDidUpdate from "../../hooks/UseDidUpdate";
+import useInterval from "../../hooks/UseInterval";
 import useKeypress from "../../hooks/UseKeyPress";
-import { createFlyingObject, getObject, moveObject, replay } from "../../redux/reducers/SceneReducer";
+import { createFlyingObject, getObject, moveObject, replay, setIsPlaying } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
 import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
@@ -18,19 +20,27 @@ interface SceneProps {}
 const Scene: FunctionComponent<SceneProps> = () => {
   
   const dispatch = useDispatch();
-  const { leftObjects, rightObjects, bending, flyingObject, hasReached, hasFailed } = useSelector((state: Store) => state.scene);
-  const contaierRef = React.useRef<HTMLDivElement>(null);
-  const armRef = React.useRef<HTMLDivElement>(null);
+  const { 
+      leftObjects, 
+      rightObjects, 
+      bending, 
+      flyingObject, 
+      hasReached, 
+      hasFailed, 
+      isPlaying, 
+      failReason } = useSelector((state: Store) => state.scene);
 
-  const {start, stop, isActive} = useInterval(() => {
-    dispatch(moveObject("bottom"));
-  },  50, {autoStart: false, selfCorrecting: true, onFinish: () => {
-    console.log("finish");
-  }, });
+  useInterval(
+    () => {
+      dispatch(moveObject("bottom"));
+    },
+    // Delay in milliseconds or null to stop it
+    isPlaying ? OBJECT_MOVE_DELAY : null,
+  )
 
   const _onPlay = () => {
     dispatch(createFlyingObject());
-    start();
+    dispatch(setIsPlaying(true));
   }
 
   useKeypress("ArrowLeft", () => {
@@ -39,37 +49,47 @@ const Scene: FunctionComponent<SceneProps> = () => {
   useKeypress("ArrowRight", () => {
     dispatch(moveObject("right"));
   });
+  
+  useKeypress(" ", () => {
+    dispatch(setIsPlaying(!isPlaying));
+  });
 
 
-  useEffect(() => {
+  useDidUpdate(() => {
     if (hasReached || hasFailed) {
-      stop();
+      dispatch(setIsPlaying(false));
     }else{
-      start();
+      dispatch(setIsPlaying(true));
+      console.log("abooo")
     }
-  } , [hasReached, stop, start, hasFailed]);
+  } , [hasReached, hasFailed]);
   
 
   // First object for intial setup to the right
   useEffect(() => {
     dispatch(getObject('right'))
   }, [dispatch])
-
  
   return (
     <>
-    {hasFailed && <FailState onReply={() => dispatch(replay())}/>}
-    <Container ref={contaierRef}>
+    Is Playing :{isPlaying ? "evet" : "hayır"}
+    {hasFailed && <FailState onReply={() => dispatch(replay())} reason={failReason}/>}
+    <Container>
       <ButtonsContainer>
-          <button onClick={_onPlay}>{'Play'}</button>
+
+          <button onClick={_onPlay}>{flyingObject ? 'RESTART' : 'PLAY'}</button>
+
+          {flyingObject && 
+            <button onClick={() => dispatch(setIsPlaying(!isPlaying))}>{isPlaying ? 'PAUSE' : 'CONTINUE'}</button>
+          }
       </ButtonsContainer>
 
         {flyingObject && <WeightObject {...flyingObject} className='flying-object' /> }
       
         <ArmAndLever>
-          <Arm className="arm" angel={bending!} ref={armRef} > 
-            {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}  
-            {rightObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
+          <Arm className="arm" angel={bending!} > 
+            {leftObjects.map(createlistOfObjects)}  
+            {rightObjects.map(createlistOfObjects)}
           </Arm>
         <Lever />
       </ArmAndLever>
@@ -81,3 +101,6 @@ const Scene: FunctionComponent<SceneProps> = () => {
 };
 
 export default Scene;
+
+
+export const createlistOfObjects = (object: ObjectProps, index: number) => <WeightObject key={index} {...object} />

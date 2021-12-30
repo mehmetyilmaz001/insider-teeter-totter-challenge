@@ -27,11 +27,11 @@ export const createRandomLeftOffset = (weight: number) => {
 export const calcBending = (equity: number, rightObjects: ObjectProps[], leftObjects: ObjectProps[] ) => {
 
 
-  const rightPower = calcPower(rightObjects);
-  const leftPower = calcPower(leftObjects);
+  const rightFactor = calcFactor(rightObjects);
+  const leftFactor = calcFactor(leftObjects);
 
-  const multiplyWithPower = equity *  Math.abs(leftPower + rightPower);
-  const bending = Math.ceil( equity < 0 ? Math.max(multiplyWithPower, -ARM_MAX_BENDING_PERCENTAGE) : Math.min(multiplyWithPower, ARM_MAX_BENDING_PERCENTAGE) );
+  const multiplyWithFactor = equity *  Math.abs(leftFactor + rightFactor);
+  const bending = Math.ceil( equity < 0 ? Math.max(multiplyWithFactor, -ARM_MAX_BENDING_PERCENTAGE) : Math.min(multiplyWithFactor, ARM_MAX_BENDING_PERCENTAGE) );
   
   // console.log('equit => ', equity)
   // console.log('bending => ', bending)
@@ -41,13 +41,13 @@ export const calcBending = (equity: number, rightObjects: ObjectProps[], leftObj
 };
 
 
-export const calcPower = (objects: ObjectProps[]) => {
-  const power = objects.reduce((power, obj) => {
+export const calcFactor = (objects: ObjectProps[]) => {
+  const factor = objects.reduce((factor, obj) => {
     const objectDistance = Math.abs( obj.position.x - HALF_ARM_WIDTH );
-    return power + (objectDistance / (HALF_ARM_WIDTH))
+    return factor + (objectDistance / (HALF_ARM_WIDTH))
   }, 0);
 
-  return power;
+  return factor;
 }
 
 export const createRandomObjectProps = (side: 'left' | 'right'): ObjectProps => {

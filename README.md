@@ -5,7 +5,7 @@ This is a ReactJS challenge project called teeter tootter for Insider job apply
 ## Algorithm
 
 - Initialy created weight object(s) and placed into the arm container.
-  - Arm bends depending on the power value which calculated by the ratio of the weigts position to arm half width. (posx / (armWidth / 2) * weight)
+  - Arm bends depending on the factor value which calculated by the ratio of the weigts position to arm half width. (posx / (armWidth / 2) * weight)
   - 
 
 ## Available Scripts

@@ -22,12 +22,13 @@ const Container = styled.div`
 
 interface FailStateProps {
     onReply: () => void;
+    reason: string;
 }
  
-const FailState: FunctionComponent<FailStateProps> = ({onReply}) => {
+const FailState: FunctionComponent<FailStateProps> = ({onReply,reason}) => {
     return ( 
         <Container className="fail-state">
-            <span>Failed!</span>
+            <span>{reason}</span>
             <button onClick={onReply}>REPLAY</button>
         </Container>
      );

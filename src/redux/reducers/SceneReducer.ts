@@ -1,7 +1,7 @@
 import { calcBending } from "./../../helpers/Common";
 import { getDisplayWeight } from "./../../components/WeightObject/WeightObject";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ARM_MAX_BENDING_PERCENTAGE, OBJECT_MOVE_STEP } from "../../constants";
+import { ARM_MAX_BENDING_PERCENTAGE, OBJECT_MOVE_DELAY, OBJECT_MOVE_STEP, TIME_STEP } from "../../constants";
 import { createRandomObjectProps } from "../../helpers/Common";
 import ObjectProps from "../../types/ObjectProps";
 import { AppThunk } from "../store";
@@ -17,6 +17,8 @@ type SceneReducerType = {
   hasFailed: boolean;
   failReason: string;
   elapsedTime: number;
+  speed: number;
+  timeStep: number;
 };
 
 const initialState: SceneReducerType = {
@@ -30,6 +32,8 @@ const initialState: SceneReducerType = {
   hasFailed: false,
   failReason: "",
   elapsedTime: 0,
+  speed: OBJECT_MOVE_DELAY,
+  timeStep: 0,
 };
 
 const scene = createSlice({
@@ -63,6 +67,10 @@ const scene = createSlice({
       void (state.failReason = action.payload),
     setElapsedTime: (state: SceneReducerType, action: PayloadAction<number>) =>
       void (state.elapsedTime = action.payload),
+    setSpeed: (state: SceneReducerType, action: PayloadAction<number>) =>
+      void (state.speed = action.payload),
+    setTimeStep: (state: SceneReducerType, action: PayloadAction<number>) =>
+      void (state.timeStep = action.payload),
     reset: (state: SceneReducerType) => {
       state.rightObjects = [];
       state.leftObjects = [];
@@ -73,6 +81,9 @@ const scene = createSlice({
       state.isPlaying = false;
       state.hasReached = false;
       state.hasFailed = false;
+      state.timeStep = 0;
+      state.speed = OBJECT_MOVE_DELAY;
+      state.elapsedTime = 0;
       state.failReason = "";
     },
   },
@@ -89,6 +100,8 @@ export const {
   setHasFailed,
   setFailReason,
   setElapsedTime,
+  setSpeed,
+  setTimeStep,
   reset,
 } = scene.actions;
 
@@ -205,5 +218,18 @@ export const getBending = (): AppThunk => async (dispatch, getState) => {
   const bending = calcBending(equity, rightObjects, leftObjects);
   dispatch(setBending(bending));
 };
+
+export const getSpeed = (elapsedTime: number): AppThunk => async (dispatch, getState) => {
+
+  const {scene: {timeStep, speed}} = getState();
+  
+    const _timeStep = Math.floor(elapsedTime / TIME_STEP) * TIME_STEP;
+    
+    if (_timeStep !== timeStep) {
+      console.log("everyTenSeconds=> ", timeStep)
+      dispatch(setSpeed(speed - (speed * 0.25)));
+      dispatch(setTimeStep(_timeStep));
+    }
+}
 
 export default scene.reducer;

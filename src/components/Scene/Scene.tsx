@@ -1,11 +1,10 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
+import { FunctionComponent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { OBJECT_MOVE_DELAY } from "../../constants";
-import { formatMMSS, secondsToTime } from "../../helpers/Common";
+import { formatMMSS } from "../../helpers/Common";
 import useDidUpdate from "../../hooks/UseDidUpdate";
 import useInterval from "../../hooks/UseInterval";
 import useKeypress from "../../hooks/UseKeyPress";
-import { createFlyingObject, createRightObject, moveObject, replay, setElapsedTime, setIsPlaying } from "../../redux/reducers/SceneReducer";
+import { createFlyingObject, createRightObject, getSpeed, moveObject, replay, setElapsedTime, setIsPlaying } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
 import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
@@ -19,9 +18,6 @@ import Lever from "./components/Lever";
 interface SceneProps {}
 
 const Scene: FunctionComponent<SceneProps> = () => {
-
-  const [ everyTenSeconds, setEveryTenSeconds ] = useState<number>(0);
-  const [ speed, setSpeed ] = useState<number>(OBJECT_MOVE_DELAY);
   
   const dispatch = useDispatch();
   const { 
@@ -33,7 +29,8 @@ const Scene: FunctionComponent<SceneProps> = () => {
       hasFailed, 
       isPlaying, 
       failReason,
-      elapsedTime
+      elapsedTime,
+      speed
      } = useSelector((state: Store) => state.scene);
 
   useInterval(() => {
@@ -45,7 +42,7 @@ const Scene: FunctionComponent<SceneProps> = () => {
       dispatch(moveObject("bottom"));
     },
     // Delay in milliseconds or null to stop it
-    isPlaying ? OBJECT_MOVE_DELAY : null,
+    isPlaying ? speed : null,
   )
 
   const _onPlay = () => {
@@ -66,14 +63,16 @@ const Scene: FunctionComponent<SceneProps> = () => {
 
 
   useDidUpdate(() => {
-    const factor = 5;
-    const _everyTenSeconds = Math.floor(elapsedTime / factor) * factor;
+    // const factor = 5;
+    // const _everyTenSeconds = Math.floor(elapsedTime / factor) * factor;
     
-    if (_everyTenSeconds !== everyTenSeconds) {
-      console.log("everyTenSeconds=> ", everyTenSeconds)
-      setSpeed(OBJECT_MOVE_DELAY - (OBJECT_MOVE_DELAY * 0.25));
-      setEveryTenSeconds(_everyTenSeconds);
-    }
+    // if (_everyTenSeconds !== everyTenSeconds) {
+    //   console.log("everyTenSeconds=> ", everyTenSeconds)
+    //   setSpeed(OBJECT_MOVE_DELAY - (OBJECT_MOVE_DELAY * 0.25));
+    //   setEveryTenSeconds(_everyTenSeconds);
+    // }
+
+    dispatch(getSpeed(elapsedTime));
 
   } , [elapsedTime]);
 

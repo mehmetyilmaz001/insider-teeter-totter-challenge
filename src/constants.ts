@@ -5,3 +5,4 @@ export const ARM_MAX_POWER_DIFF = 20;
 export const OBJECT_WEIGHT_RANGE = [1, 10];
 export const OBJECT_SHAPES = ['TRIANGLE', 'SQUARE', 'CIRCLE'] as const;
 export const OBJECT_WEIGHT_MULTIPLIER = 10;
+export const OBJECT_MOVE_STEP = 5;

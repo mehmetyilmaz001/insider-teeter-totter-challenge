@@ -2,10 +2,9 @@ import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import SceneReducer from "./reducers/SceneReducer";
 
 
-
 const store = configureStore({ reducer: {
     scene: SceneReducer    
-} });
+}, middleware: (getDefaultMiddileware) => getDefaultMiddileware({serializableCheck: false}) });
 
 export type Store = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

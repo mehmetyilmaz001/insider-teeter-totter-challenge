@@ -58,12 +58,12 @@ const StyledShape = styled.div<WeightObjectProps>`
 `;
 
 const WeightObject: FunctionComponent<WeightObjectProps> = (props) => {
-  console.log("props: ", props);
+  // console.log("props: ", props.position);
   const defaultProps = {
     ...props,
     position: {
       ...props.position,
-      y: props.side === 'right' ?  -getDisplayWeight(props.weight) : 0,
+      y: props.side === 'right' ?  -getDisplayWeight(props.weight) : props.position.y,
     },
   };
   return <StyledShape {...defaultProps}>{props.weight}</StyledShape>;

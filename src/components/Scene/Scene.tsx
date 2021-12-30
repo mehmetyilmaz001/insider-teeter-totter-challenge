@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { useInterval } from "react-interval-hook";
 import { useDispatch, useSelector } from "react-redux";
-import { createFlyingObject, getObject } from "../../redux/reducers/SceneReducer";
+import useKeypress from "../../hooks/UseKeyPress";
+import { createFlyingObject, getObject, moveObject } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
 import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
@@ -16,30 +17,39 @@ interface SceneProps {}
 const Scene: FunctionComponent<SceneProps> = () => {
   
   const dispatch = useDispatch();
-  const { leftObjects, rightObjects, bending, flyingObject } = useSelector((state: Store) => state.scene);
+  const { leftObjects, rightObjects, bending, flyingObject, hasReached } = useSelector((state: Store) => state.scene);
   const contaierRef = React.useRef<HTMLDivElement>(null);
   const armRef = React.useRef<HTMLDivElement>(null);
 
   const {start, stop, isActive} = useInterval(() => {
-    console.log("a")
-  },  1000, {autoStart: false, onFinish: () => {
+    dispatch(moveObject("bottom"));
+  },  100, {autoStart: false, onFinish: () => {
     console.log("finish");
   }, });
 
+  const _onPlay = () => {
+    dispatch(createFlyingObject());
+    start();
+  }
 
+  useKeypress("ArrowLeft", () => {
+    dispatch(moveObject("left"));
+  });
+  useKeypress("ArrowRight", () => {
+    dispatch(moveObject("right"));
+  });
+
+
+  useEffect(() => {
+    if (hasReached) {
+      stop();
+    }
+  } , [hasReached, stop]);
+  
   useEffect(() => {
     dispatch(getObject('right'))
   }, [dispatch])
 
-
-  useEffect(() => {
-    // start();
-  } , [leftObjects])
-
-
-  const _onPlay = () => {
-    dispatch(createFlyingObject());
-  }
 
   console.log("is timer active: ", isActive());
 
@@ -53,7 +63,7 @@ const Scene: FunctionComponent<SceneProps> = () => {
         {flyingObject && <WeightObject {...flyingObject} className='flying-object' /> }
       
         <ArmAndLever>
-        {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
+          {leftObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}
           <Arm className="arm" angel={bending!} ref={armRef} > 
             
             {rightObjects.map((object: ObjectProps, index: number) => <WeightObject key={index} {...object} />)}

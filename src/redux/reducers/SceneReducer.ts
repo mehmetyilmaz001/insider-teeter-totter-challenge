@@ -16,6 +16,7 @@ type SceneReducerType = {
   hasReached: boolean;
   hasFailed: boolean;
   failReason: string;
+  elapsedTime: number;
 };
 
 const initialState: SceneReducerType = {
@@ -28,6 +29,7 @@ const initialState: SceneReducerType = {
   hasReached: false,
   hasFailed: false,
   failReason: "",
+  elapsedTime: 0,
 };
 
 const scene = createSlice({
@@ -59,11 +61,14 @@ const scene = createSlice({
       void (state.hasFailed = action.payload),
     setFailReason: (state: SceneReducerType, action: PayloadAction<string>) =>
       void (state.failReason = action.payload),
+    setElapsedTime: (state: SceneReducerType, action: PayloadAction<number>) =>
+      void (state.elapsedTime = action.payload),
     reset: (state: SceneReducerType) => {
       state.rightObjects = [];
       state.leftObjects = [];
       state.equity = 0;
       state.bending = 0;
+      state.elapsedTime = 0;
       state.flyingObject = null;
       state.isPlaying = false;
       state.hasReached = false;
@@ -83,13 +88,14 @@ export const {
   setHasReached,
   setHasFailed,
   setFailReason,
+  setElapsedTime,
   reset,
 } = scene.actions;
 
 export const replay = (): AppThunk => (dispatch) => {
   dispatch(reset());
   dispatch(createFlyingObject());
-  dispatch(getObject("right"));
+  dispatch(createRightObject());
 };
 
 export const createFlyingObject = (): AppThunk => async (dispatch) => {
@@ -133,7 +139,7 @@ export const moveObject =
 
 const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
   const {
-    scene: { flyingObject, bending, hasFailed, leftObjects, rightObjects },
+    scene: { flyingObject, bending, hasFailed },
   } = getState();
 
   if (flyingObject) {
@@ -162,12 +168,11 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
       if (hasFailed === false) {
         setTimeout(() => {
           // Create new right object
-          dispatch(getObject("right"));
+          dispatch(createRightObject());
         }, 500);
 
-       
         const bendingClause = Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE;
-        
+
         if (bendingClause) {
           dispatch(setHasFailed(true));
           dispatch(setFailReason("Failed! Weight is too high for one side!"));
@@ -185,21 +190,12 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
   }
 };
 
-export const getObject =
-  (direction: "left" | "right"): AppThunk =>
-  async (dispatch) => {
-    const object = createRandomObjectProps(direction);
-    dispatch(setEquity(direction === "left" ? 0 : object.weight));
-    // the equity is initially 0 for the left object. Because equity will be set after the left object reaches the arm
-
-    dispatch(
-      direction === "left" ? addLeftObject(object) : addRightObject(object)
-    );
-
-    if (direction === "right") {
-      dispatch(getBending());
-    }
-  };
+export const createRightObject = (): AppThunk => async (dispatch) => {
+  const object = createRandomObjectProps("right");
+  dispatch(setEquity(object.weight));
+  dispatch(addRightObject(object));
+  dispatch(getBending());
+};
 
 export const getBending = (): AppThunk => async (dispatch, getState) => {
   const {

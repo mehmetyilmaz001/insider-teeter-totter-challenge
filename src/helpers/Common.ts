@@ -78,3 +78,25 @@ export const createRandomObjectProps = (side: 'left' | 'right'): ObjectProps => 
     side,
   };
 };
+
+
+export const secondsToTime = (secs: number) =>
+{
+    secs = Math.round(secs);
+    // var hours = Math.floor(secs / (60 * 60));
+
+    var divisor_for_minutes = secs % (60 * 60);
+    var minutes = Math.floor(divisor_for_minutes / 60);
+
+    var divisor_for_seconds = divisor_for_minutes % 60;
+    var seconds = Math.ceil(divisor_for_seconds);
+
+    var obj = {
+        // "h": hours,
+        "m": minutes,
+        "s": seconds
+    };
+    return obj;
+}
+
+export const formatMMSS = (s: number) => (s-(s%=60))/60+(9<s?':':':0')+s;

@@ -1,10 +1,11 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
+import React, { FunctionComponent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { OBJECT_MOVE_DELAY } from "../../constants";
+import { formatMMSS, secondsToTime } from "../../helpers/Common";
 import useDidUpdate from "../../hooks/UseDidUpdate";
 import useInterval from "../../hooks/UseInterval";
 import useKeypress from "../../hooks/UseKeyPress";
-import { createFlyingObject, getObject, moveObject, replay, setIsPlaying } from "../../redux/reducers/SceneReducer";
+import { createFlyingObject, createRightObject, moveObject, replay, setElapsedTime, setIsPlaying } from "../../redux/reducers/SceneReducer";
 import { Store } from "../../redux/store";
 import ObjectProps from "../../types/ObjectProps";
 import WeightObject from "../WeightObject/WeightObject";
@@ -28,7 +29,13 @@ const Scene: FunctionComponent<SceneProps> = () => {
       hasReached, 
       hasFailed, 
       isPlaying, 
-      failReason } = useSelector((state: Store) => state.scene);
+      failReason,
+      elapsedTime
+     } = useSelector((state: Store) => state.scene);
+
+  useInterval(() => {
+    dispatch(setElapsedTime(elapsedTime + 1));
+  } , isPlaying ? 1000 : null);
 
   useInterval(
     () => {
@@ -60,19 +67,19 @@ const Scene: FunctionComponent<SceneProps> = () => {
       dispatch(setIsPlaying(false));
     }else{
       dispatch(setIsPlaying(true));
-      console.log("abooo")
     }
   } , [hasReached, hasFailed]);
   
 
   // First object for intial setup to the right
   useEffect(() => {
-    dispatch(getObject('right'))
+    dispatch(createRightObject())
   }, [dispatch])
  
   return (
     <>
-    Is Playing :{isPlaying ? "evet" : "hayır"}
+    Is Playing :{isPlaying ? "evet" : "hayır"} <br />
+    Elapsed Time : {formatMMSS(elapsedTime)}  <br />
     {hasFailed && <FailState onReply={() => dispatch(replay())} reason={failReason}/>}
     <Container>
       <ButtonsContainer>

@@ -1,9 +1,9 @@
-# Project
+# Insider Coding Challenge Project
 
-This is a ReactJS challenge project called teeter tootter for Insider job apply
+This is a ReactJS challenge project called teeter tootter for Insider job apply.
 
 
-## Live demo: [https://hardcore-wescoff-c6abd6.netlify.app/](https://hardcore-wescoff-c6abd6.netlify.app/)
+## Live demo: [https://61cee898add95e3d6d46c320--modest-swirles-c8d3ff.netlify.app/](https://61cee898add95e3d6d46c320--modest-swirles-c8d3ff.netlify.app/)
 
 ## Preview
 
@@ -14,8 +14,8 @@ This is a ReactJS challenge project called teeter tootter for Insider job apply
 
 #### For the right side
 - Initialy created weight object(s) are placed into the arm container.
-  - Arm bends depending on the factor value which calculated by the ratio of the weigts position to arm half width. (posx - (armWidth / 2)) / (armWidth / 2)
-  - When a flying object reaches the left side an right object is created and placed to the right side.
+- Arm bends depending on the factor value which calculated by the ratio of the weigts position to arm half width. (posx - (armWidth / 2)) / (armWidth / 2)
+- When a flying object reaches the left side an right object is created and placed to the right side.
 
 #### For the left side
 - When the user clics the play button a flying is created

@@ -2,11 +2,28 @@
 
 This is a ReactJS challenge project called teeter tootter for Insider job apply
 
-## Algorithm
 
-- Initialy created weight object(s) and placed into the arm container.
-  - Arm bends depending on the factor value which calculated by the ratio of the weigts position to arm half width. (posx / (armWidth / 2) * weight)
-  - 
+## Live demo: [https://hardcore-wescoff-c6abd6.netlify.app/](https://hardcore-wescoff-c6abd6.netlify.app/)
+
+## Preview
+
+![preview](.github/preview.gif)
+
+
+### Algorithm
+
+#### For the right side
+- Initialy created weight object(s) are placed into the arm container.
+  - Arm bends depending on the factor value which calculated by the ratio of the weigts position to arm half width. (posx - (armWidth / 2)) / (armWidth / 2)
+  - When a flying object reaches the left side an right object is created and placed to the right side.
+
+#### For the left side
+- When the user clics the play button a flying is created
+- After creation a interval timer starts and increases the y position of object
+- At the same time user can move the object to righ and left with the keys arrow left and arrow right
+- when flying object reaches the arm it is added to the left side objects list and flying object is cleared for new one
+
+When movement is going ahead on if bending exceeds limit of %30 the game is stopped.
 
 ## Available Scripts
 

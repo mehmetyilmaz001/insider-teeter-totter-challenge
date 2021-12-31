@@ -1,7 +1,6 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { OBJECT_MOVE_DELAY, TIME_STEP } from "../../constants";
-import { formatMMSS } from "../../helpers/Common";
+import { TIME_STEP } from "../../constants";
 import useDidUpdate from "../../hooks/UseDidUpdate";
 import useInterval from "../../hooks/UseInterval";
 import useKeypress from "../../hooks/UseKeyPress";
@@ -66,11 +65,6 @@ const Scene: FunctionComponent<SceneProps> = () => {
     dispatch(setIsPlaying(true));
   };
  
-  const _re = () => {
-    dispatch(createFlyingObject());
-    dispatch(setIsPlaying(true));
-  };
-
   useKeypress("ArrowLeft", () => {
     dispatch(moveObject("left"));
   });

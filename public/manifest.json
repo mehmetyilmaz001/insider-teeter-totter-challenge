@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Insider Teeter Totter",
+  "name": "A react app for Insider coding challenge",
   "icons": [
     {
       "src": "favicon.ico",

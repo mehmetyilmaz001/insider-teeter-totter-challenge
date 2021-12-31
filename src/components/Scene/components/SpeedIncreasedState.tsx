@@ -3,24 +3,27 @@ import styled from "styled-components";
 
 interface SpeedIncreasedStateProps {
     show: boolean;
-    onClose: () => void;
+    // onClose: () => void;
 }
 
 
 const Container = styled.div<SpeedIncreasedStateProps>`
     display: ${({show}) => show ? 'flex' : 'none'};
+    justify-content: center;
+    align-items: center;
     position: fixed;
-    display: flex;
-    transform: scale(1.1);
+    transform: scale(${({show}) => show ? '1.2' : '1'});
     transition: all 0.3s ease-in-out;
     color: white;
-    background-color: red;
+    background-color: orange;
     width: 200px;
     height: 30px;
     left: 0;
     right: 0;
-    top: 5;
+    top: 0;
     margin: auto;
+    border-radius: 10px;
+    text-align:center;
 `;
  
 const SpeedIncreasedState: FunctionComponent<SpeedIncreasedStateProps> = (props) => {

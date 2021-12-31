@@ -10,7 +10,7 @@ const Lever = styled.div`
   height: 0;
   border-left: 100px solid transparent;
   border-right: 100px solid transparent;
-  border-bottom: 190px solid grey;
+  border-bottom: 190px solid white;
 `;
 
 

@@ -7,12 +7,14 @@ const Arm = styled.div<{
     transform: rotate(${({angel}) => angel}deg);
     position: absolute;
     width: ${ARM_WIDTH}px;
-    height: 5px;
+    height: 10px;
     background-color: brown;
     left: 0;
     right: 0;
     margin: auto;
     transition: all 0.2s;
+    border-radius: 2px;
+    border: solid 0.1px white
 `;
 
 

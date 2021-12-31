@@ -6,7 +6,7 @@ const Container = styled.div`
   width: ${ARM_WIDTH}px;
   height: 90%;
   margin: auto;
-  border: solid 1px;
+  /* border: solid 1px; */
 `;
 
 export default Container;

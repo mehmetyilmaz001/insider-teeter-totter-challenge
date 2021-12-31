@@ -19,7 +19,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     box-sizing: border-box;
-    background: ${Theme.palette.background.body};
+    background: url('/bg.jpeg') no-repeat center center fixed;
     color: ${Theme.palette.text.primary};
     ${Theme.typography.body};
   }

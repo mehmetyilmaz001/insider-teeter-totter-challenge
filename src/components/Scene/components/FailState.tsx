@@ -5,7 +5,7 @@ const Container = styled.div`
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.90);
+    background-color: rgba(0, 0, 0, 0.70);
     display: flex;
     flex-direction: column;
     justify-content: center;

@@ -162,7 +162,7 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
 
     if (
       flyingObject.position.y + getDisplayWeight(flyingObject.weight) >=
-      armY
+      armY - Math.abs(bending)
     ) {
       dispatch(setHasReached(true));
       dispatch(setEquity(-flyingObject.weight));
@@ -179,12 +179,13 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
       dispatch(setFlyingObject(null));
 
       if (hasFailed === false) {
+
+      
         setTimeout(() => {
           // Create new right object
           dispatch(createRightObject());
-        }, 500);
 
-        const bendingClause = Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE;
+          const bendingClause = Math.abs(bending) >= ARM_MAX_BENDING_PERCENTAGE;
 
         if (bendingClause) {
           dispatch(setHasFailed(true));
@@ -198,6 +199,9 @@ const onFlyingObjectReachesArm = (): AppThunk => (dispatch, getState) => {
             dispatch(createFlyingObject());
           }, 700);
         }
+        }, 500);
+
+        
       }
     }
   }
@@ -226,7 +230,6 @@ export const getSpeed = (elapsedTime: number): AppThunk => async (dispatch, getS
     const _timeStep = Math.floor(elapsedTime / TIME_STEP) * TIME_STEP;
     
     if (_timeStep !== timeStep) {
-      console.log("everyTenSeconds=> ", timeStep)
       dispatch(setSpeed(speed - (speed * 0.25)));
       dispatch(setTimeStep(_timeStep));
     }

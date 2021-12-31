@@ -51,7 +51,7 @@ export const calcFactor = (objects: ObjectProps[]) => {
 }
 
 export const createRandomObjectProps = (side: 'left' | 'right'): ObjectProps => {
-  const color = randomcolor({ luminosity: "dark" });
+  const color = randomcolor({ luminosity: "light" });
   const weight = Math.floor(Math.random() * OBJECT_WEIGHT_RANGE[1]) + OBJECT_WEIGHT_RANGE[0];
 
   let offset = 0;
